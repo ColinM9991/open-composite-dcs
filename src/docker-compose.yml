@@ -1,0 +1,6 @@
+artifact-server:
+    image: ghcr.io/jefuller/artifact-server:latest
+    environment:
+      AUTH_KEY: foo
+    ports:
+      - 8080:8080

@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Execute Python script
+    steps:
+      - uses: actions/checkout@v2
+      - name: "call action"
+        id: last_release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+          view_top: 1
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - run: |
+          pip install -r requirements.txt
+          output=$(python src/main.py ${{ steps.last_release.outputs.tag_name }})
+          output_vars=(${output//$'\n'/ })
+          echo "::set-output name=artifact_name::${output_vars[0]}"
+          echo "::set-output name=artifact_version::${output_vars[1]}"
+          cd tmp; echo $(zip -r ${output_vars[0]}.zip ${output_vars[0]})
+          echo "::set-output name=should_create_release::true"
+          echo "Setting to true"
+        id: pythonexec
+        
+      - name: release
+        if: ${{ steps.pythonexec.outputs.should_create_release == 'true' }}
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.pythonexec.outputs.artifact_name }}
+          tag_name: ${{ steps.pythonexec.outputs.artifact_version }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: upload release artifact
+        if: ${{ steps.pythonexec.outputs.should_create_release == 'true' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: tmp/${{ steps.pythonexec.outputs.artifact_name }}.zip
+          asset_name: ${{ steps.pythonexec.outputs.artifact_name }}.zip
+          asset_content_type: application/gzip
