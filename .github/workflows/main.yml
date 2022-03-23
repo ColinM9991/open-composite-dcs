@@ -21,7 +21,7 @@ jobs:
           echo "$output_vars"
           echo "::set-output name=artifact_name::${output_vars[0]}"
           echo "::set-output name=artifact_version::${output_vars[1]}"
-          cd tmp; echo $(zip -r ${output_vars[0]}.zip ${output_vars[0]})
+          cd tmp/${output_vars[0]}; echo $(zip -r ${output_vars[0]}.zip *)
         id: test
         
       - name: release
