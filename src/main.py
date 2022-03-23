@@ -59,7 +59,7 @@ for dirname, dirnames, filenames in os.walk(source_dir):
 
     os.rmdir(dirname)
 
-version_file = os.path.join(source_dir, 'VERSION.txt')
+version_file = os.path.join('tmp', 'VERSION.txt')
 
 with open(version_file, 'w') as v:
     v.write(version)
