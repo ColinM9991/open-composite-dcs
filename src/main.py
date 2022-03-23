@@ -7,10 +7,6 @@ import sys
 from zipfile import ZipFile
 import urllib3
 
-latest_release_ver = ''
-if len(sys.argv) > 1:
-    latest_release_ver = sys.argv[1]
-
 project_url = 'https://gitlab.com/Jabbah/open-composite-acc'
 api_url = 'https://gitlab.com/api/v4/projects/32868264/releases/'
 
@@ -21,13 +17,9 @@ http = urllib3.PoolManager()
 
 response = http.request('GET', api_url)
 parsed_response = json.loads(response.data)
-
 latest_release = parsed_response[0]
-tag_name = latest_release['tag_name']
-if str(tag_name).strip() == str(latest_release_ver).strip():
-    print('false')
-    sys.exit(0)
 
+tag_name = latest_release['tag_name']
 description = latest_release['description']
 
 version = re.search('(?P<version>[0-9\.]+)', tag_name).group('version')
