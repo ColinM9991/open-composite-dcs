@@ -1,4 +1,4 @@
-name: CI
+name: OCXR to OvGME
 
 on:
   push:
@@ -9,38 +9,88 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Execute Python script
+    name: Create OvGME compatible package
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python
+      
+      - name: "call action"
+        id: latest-github-release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+          view_top: 1
+
+      - name: Setup Python
         uses: actions/setup-python@v2
-      - run: |
+
+      - name: Fetch OCXR Release Details
+        run: |
           pip install -r requirements.txt
-          output=$(python src/main.py)
+          output=$(python src/fetch-latest-release.py)
           output_vars=(${output//$'\n'/ })
-          echo "$output_vars"
-          echo "::set-output name=artifact_name::${output_vars[0]}"
-          echo "::set-output name=artifact_version::${output_vars[1]}"
-          cd tmp/; echo $(zip -r ${output_vars[0]}.zip *)
-        id: test
+
+          echo "${output_vars[0]}"
+          
+          echo "::set-output name=ocxr_tag::${output_vars[0]}"
+          echo "::set-output name=ocxr_version::${output_vars[1]}"
+          echo "::set-output name=ocxr_release_asset::${output_vars[2]}"
+        id: ocxr-release-details
+
+      - run: |
+          [[ "${{ steps.latest-github-release.outputs.tag_name }}" = "${{ steps.ocxr-release-details.outputs.ocxr_tag }}" ]] && shouldRun=false || shouldRun=true
+          echo "::set-output name=should_release::$shouldRun"
+        id: release-status
+
+      - run: echo "A local release already exists for ${{ steps.ocxr-release-details.outputs.ocxr_tag }}"
+        if: steps.release-status.outputs.should_release == 'false'
+
+      - name: Create OvGME Package
+        id: ovgme-package
+        run: |
+          [ -d tmp ] && rm -r tmp
+          [ -d build ] && rm -r build
+          mkdir tmp && cd tmp && curl -LJO ${{ steps.ocxr-release-details.outputs.ocxr_release_asset }}
+          unzip *.zip -d ../build/ && cd ../build/*
+
+          directory_name=${PWD##*/}
+          mv D3DCompiler_47/D3DCompiler_47.dll ./D3DCompiler_47.dll && rmdir D3DCompiler_47
+          echo -e '\n\nforceConnectedTouch=disabled\nrenderCustomHands=disabled' >> opencomposite.ini
+
+          mkdir bin
+
+          shopt -s extglob dotglob
+          mv !(bin) bin
+          shopt -u dotglob
+
+          cd ../
+          cat > VERSION.txt <<EOF
+          ${{ steps.ocxr-release-details.outputs.ocxr_version }}
+          EOF
+
+          zip -r $directory_name.zip .
+
+          echo "::set-output name=artifact_name::$directory_name"
+        if: steps.release-status.outputs.should_release == 'true'
         
-      - name: release
+      - name: Create GitHub Release
         uses: actions/create-release@v1
+        if: steps.release-status.outputs.should_release == 'true'
         id: create_release
         with:
           draft: false
           prerelease: false
-          release_name: ${{ steps.test.outputs.artifact_name }}
-          tag_name: ${{ steps.test.outputs.artifact_version }}
+          release_name: ${{ steps.ovgme-package.outputs.artifact_name }}_${{ steps.ocxr-release-details.outputs.ocxr_tag }}
+          tag_name: ${{ steps.ocxr-release-details.outputs.ocxr_tag }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: upload release artifact
+      - name: Upload Release Artifact
         uses: actions/upload-release-asset@v1
+        if: steps.release-status.outputs.should_release == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: tmp/${{ steps.test.outputs.artifact_name }}.zip
-          asset_name: ${{ steps.test.outputs.artifact_name }}.zip
+          asset_path: build/${{ steps.ovgme-package.outputs.artifact_name }}.zip
+          asset_name: ${{ steps.ovgme-package.outputs.artifact_name }}_${{ steps.ocxr-release-details.outputs.ocxr_tag }}.zip
           asset_content_type: application/gzip
