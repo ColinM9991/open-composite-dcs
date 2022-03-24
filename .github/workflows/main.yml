@@ -92,5 +92,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/${{ steps.ovgme-package.outputs.artifact_name }}.zip
-          asset_name: ${{ steps.ovgme-package.outputs.artifact_name }}_${{ steps.ocxr-release-details.outputs.ocxr_tag }}.zip
+          asset_name: ${{ steps.ovgme-package.outputs.artifact_name }}.zip
           asset_content_type: application/gzip
