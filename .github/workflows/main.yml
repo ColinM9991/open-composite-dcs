@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
-      - name: "call action"
+      - name: Get latest GitHub release
         id: latest-github-release
         uses: InsonusK/get-latest-release@v1.0.1
         with:
