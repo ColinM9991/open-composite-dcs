@@ -1,5 +1,11 @@
 # OvGME Packager for OpenXR – OpenComposite for DCS
 
+## Note
+
+This repository is now archived as the OpenXR changes have been merged with the OpenComposite upstream repository which uses a release process that isn't easily supported by this repository.
+
+It is therefore recommended that you download the *System-wide installation* binary from the [upstream repository](https://gitlab.com/znixian/OpenOVR) as this will handle automatic updates and allow you to toggle between OpenXR and SteamVR globally.
+
 ## Description
 
 This repository does not contain any of the code for the OpenCompositeACC project, nor is it affiliated in any way.  
