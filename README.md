@@ -2,9 +2,11 @@
 
 ## Note
 
-This repository is now archived as the OpenXR changes have been merged with the OpenComposite upstream repository which uses a release process that isn't easily supported by this repository.
+This repository is currently unsupported and needs to be migrated to the upstream OpenComposite repository.
 
-It is therefore recommended that you download the *System-wide installation* binary from the [upstream repository](https://gitlab.com/znixian/OpenOVR) as this will handle automatic updates and allow you to toggle between OpenXR and SteamVR globally.
+I've had issues with toggling between SteamVR and OpenComposite using the OpenComposite Runtime Switcher (global installer) and have decided to maintain the OvGME repository as a way of running OpenComposite on DCS while using SteamVR for all other games, such as Onward.
+
+An update will arrive over the coming days to reintroduce automated releases on a commit basis from the upstream OpenComposite repository.
 
 ## Description
 
@@ -19,7 +21,7 @@ I highly recommend that you check out the following links, the DCS forum thread 
 
 [DCS Forum - OpenXR OpenComposite for DCS](https://forum.dcs.world/topic/295123-update-243-v061-openxr-quickstart-guide-for-g2-g1-and-other-headsets/)
 
-[GitLab - OpenCompositeACC](https://gitlab.com/Jabbah/open-composite-acc/-/tree/MiniCompositor)
+[GitLab - OpenComposite](https://gitlab.com/znixian/OpenOVR/-/tree/openxr)
 
 ## Usage
 
